@@ -1,12 +1,25 @@
 <?php
 
 use App\Http\Controllers\PostDashboardController;
+use App\Models\Category;
 use App\Models\Post;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 
 Route::get('/', function () {
-    return view('home', ['title' => 'Home Page']);
+    $featuredPosts = Post::latest()->take(3)->get();
+    $categories = Category::withCount('posts')->orderBy('name')->get();
+
+    return view('home', [
+        'title' => 'Home',
+        'featuredPosts' => $featuredPosts,
+        'categories' => $categories,
+        'stats' => [
+            'posts' => Post::count(),
+            'categories' => $categories->count(),
+            'writers' => Post::query()->distinct('author_id')->count('author_id'),
+        ],
+    ]);
 });
 
 Route::get('/posts', function () {
